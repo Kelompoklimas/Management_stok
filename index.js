@@ -1,4 +1,7 @@
 const prompt = require("prompt-sync")({ sigint: true });
+const { PrismaClient } = require("@prisma/client");
+const Prisma = new PrismaClient();
+const User = Prisma.user;
 
 var isRunning = true;
 (async () => {
@@ -12,17 +15,13 @@ var isRunning = true;
       let name = prompt("Please input your name ");
       let password = prompt("Please input your password ");
 
-      const user = {
-        nama: name,
-        password: password,
-      };
-
-      const hasil = await login(user);
-      if (hasil === "berhasil") {
-        isRunning = !isRunning;
-        isRunnings = true;
-        logins = name;
-      }
+      await User.create({
+        data: {
+          email: "rajih@gmail.com",
+          username: "rajih",
+          password: "rajih123",
+        },
+      });
     }
   }
 })();
