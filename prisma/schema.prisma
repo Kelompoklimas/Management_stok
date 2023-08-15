@@ -3,6 +3,7 @@
 
 generator client {
   provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -22,7 +23,7 @@ model User {
 
 model Product {
   id        String     @id @default(uuid())
-  barcode   String?
+  barcode   String?    @unique
   name      String
   price     String
   stock     Int
