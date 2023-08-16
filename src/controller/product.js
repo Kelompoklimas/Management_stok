@@ -8,6 +8,7 @@ const checkFindProduct = async (input) => {
   const find = await Product.findUnique({
     where: {
       id: input,
+      status: true,
     },
     select: {
       name: true,
@@ -25,8 +26,9 @@ const checkFindProduct = async (input) => {
   });
   if (!find) {
     return console.log(`id product ${input} not found`);
+  } else {
+    return { status: "Success", data: find };
   }
-  return { status: "Success", data: find };
 };
 const createProduct = async (input) => {
   const { name, price, stock, location, barcode, user, categories } = input;
@@ -46,20 +48,22 @@ const createProduct = async (input) => {
         userId: findUser.id,
       },
     });
-    await Promise.all(
-      categories.map(async (i) => {
-        await Categories.create({
-          data: {
-            productId: createProduct.id,
-            tagsId: i,
-          },
-        });
-      })
-    );
+    if (categories.length > 0) {
+      await Promise.all(
+        categories.map(async (i) => {
+          await Categories.create({
+            data: {
+              productId: createProduct.id,
+              tagsId: i,
+            },
+          });
+        })
+      );
+    }
 
     return console.log("Success create product");
   } catch (error) {
-    console.log(error);
+    console.log("please login first");
   }
 };
 
@@ -96,6 +100,7 @@ const updateProduct = async (input) => {
     const updateProduct = await Product.update({
       where: {
         id: id,
+        status: true,
       },
       data: {
         barcode: barcode,
@@ -125,8 +130,30 @@ const updateProduct = async (input) => {
 
     return console.log("Success Update Product");
   } catch (error) {
+    return console.log("Product id Not Found");
+  }
+};
+
+const deleteProduct = async (input) => {
+  try {
+    await Product.update({
+      where: {
+        id: input,
+        status: true,
+      },
+      data: {
+        status: false,
+      },
+    });
+    return console.log("Success Delete Product");
+  } catch (error) {
     return console.log(error);
   }
 };
 
-module.exports = { checkFindProduct, createProduct, updateProduct };
+module.exports = {
+  checkFindProduct,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+};
