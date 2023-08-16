@@ -9,6 +9,7 @@ const {
   checkFindProduct,
   updateProduct,
   deleteProduct,
+  searchProduct,
 } = require("./src/controller/product");
 
 var isRunning = true;
@@ -26,7 +27,7 @@ let showCategories = async () => {
     })
   );
 
-  console.log(
+  console.table(
     categori.map((item) => ({
       number: item.number,
       nameCategori: item.nameCategori,
@@ -52,6 +53,7 @@ let showCategories = async () => {
     console.log("2. Add Product");
     console.log("3. Update Data");
     console.log("4. Delete Product");
+    console.log("5. Search Product");
 
     let input = prompt("Please input menu ");
 
@@ -81,6 +83,7 @@ let showCategories = async () => {
         if (cekStatus === "n") {
           status = !status;
         }
+        categori = [];
       }
 
       const input = {
@@ -153,6 +156,11 @@ let showCategories = async () => {
       let input = prompt("Please input id product ");
 
       await deleteProduct(input);
+    }
+    if (Number(input) === 5) {
+      let input = prompt("Please input name product ");
+
+      await searchProduct(input);
     }
   }
 })();

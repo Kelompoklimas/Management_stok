@@ -151,9 +151,36 @@ const deleteProduct = async (input) => {
   }
 };
 
+const searchProduct = async (input) => {
+  try {
+    const products = await Product.findMany({
+      where: {
+        name: {
+          contains: input,
+        },
+      },
+      select: {
+        name: true,
+        price: true,
+        stock: true,
+        location: true,
+        barcode: true,
+      },
+    });
+    if (products.length > 0) {
+      return console.table(products);
+    } else {
+      return console.log("Product Not Found");
+    }
+  } catch (error) {
+    return console.log(error);
+  }
+};
+
 module.exports = {
   checkFindProduct,
   createProduct,
   updateProduct,
   deleteProduct,
+  searchProduct,
 };
