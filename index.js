@@ -11,9 +11,10 @@ const {
   deleteProduct,
   searchProduct,
 } = require("./src/controller/product");
+const { register } = require("./src/controller/user");
 
 var isRunning = true;
-var secondRunning = true;
+var secondRunning = false;
 let categori = [];
 
 let showCategories = async () => {
@@ -36,17 +37,23 @@ let showCategories = async () => {
 };
 
 (async () => {
-  // while (isRunning) {
-  //   console.log("1. Login");
-  //   console.log("2. Register");
+  while (isRunning) {
+    console.log("1. Login");
+    console.log("2. Register");
 
-  //   let input = prompt("Please input menu ");
+    let input = prompt("Please input menu ");
 
-  //   if (Number(input) === 1) {
-  //     let name = prompt("Please input your name ");
-  //     let password = prompt("Please input your password ");
-  //   }
-  // }
+    if (Number(input) === 1) {
+      let name = prompt("Please input your name ");
+      let password = prompt("Please input your password ");
+    }
+    if (Number(input) === 2) {
+      let name = prompt("Please input your name ");
+      let email = prompt("Please input your email ");
+      let password = prompt("Please input your password ");
+      await register(name, email, password );
+    }
+  }
 
   while (secondRunning) {
     console.log("1. Show all category");
