@@ -13,4 +13,16 @@ const allTags = async () => {
   return findAllTags;
 };
 
-module.exports = allTags;
+async function createTags(p_name_category) {
+  const tags = await Prisma.tags.create({
+    data: {
+      name_tags: p_name_category,
+    }
+  });
+  return console.log ("succes create tags");
+}
+
+module.exports =  {
+  allTags,
+  createTags,
+}
