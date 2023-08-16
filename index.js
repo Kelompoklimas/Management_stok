@@ -5,6 +5,7 @@ const User = Prisma.user;
 
 const allTags = require("./src/controller/tags");
 const validationProduct = require("./src/middleware/Product.validation");
+const { checkFindProduct, updateProduct } = require("./src/controller/product");
 
 var isRunning = true;
 var secondRunning = true;
@@ -45,11 +46,13 @@ let showCategories = async () => {
   while (secondRunning) {
     console.log("1. Show all category");
     console.log("2. Add Product");
+    console.log("3. Update Data");
 
     let input = prompt("Please input menu");
 
     if (Number(input) === 1) {
       await showCategories();
+      categori = [];
     }
 
     if (Number(input) === 2) {
@@ -85,6 +88,57 @@ let showCategories = async () => {
         categories: categoriesarray,
       };
       await validationProduct(input);
+    }
+    if (Number(input) === 3) {
+      let status1 = false;
+      let data = null;
+      let id = prompt("Please input id product ");
+      await checkFindProduct(id).then((response) => {
+        if (response.status === "Success") {
+          status1 = true;
+          data = response.data;
+        }
+      });
+      while (status1) {
+        console.log(data);
+        let name = prompt("Please input your name product ");
+        let price = prompt("Please input your price product ");
+        console.log(
+          "---please make sure if you want to add stock start with + and otherwise start with - (example : -1 or +1)"
+        );
+        let stock = prompt("Please input your stock product ");
+        let location = prompt("Please input your location ");
+        let barcode = prompt("Please input your code barcode ");
+        await showCategories();
+
+        let categoriesarray = [];
+        let status = true;
+        while (status) {
+          let categories = prompt("Please input categories ");
+          categori.map((e) => {
+            if (Number(e.number) === Number(categories)) {
+              categoriesarray.push(e.id);
+            }
+          });
+          let cekStatus = prompt("input again ? y / n ");
+          if (cekStatus === "n") {
+            status = !status;
+          }
+        }
+        const input = {
+          id: id,
+          name: name,
+          price: price,
+          stock: stock,
+          location: location,
+          barcode: barcode,
+          user: "rajih",
+          categories: categoriesarray,
+        };
+
+        await updateProduct({ input: input, data: data });
+        status1 = false;
+      }
     }
   }
 })();
