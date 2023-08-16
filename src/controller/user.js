@@ -28,9 +28,27 @@ async function register(p_username, p_email, p_password) {
     } catch (error) {
       console.log ("error")
     }
+  }
+
+  async function changePassword(email, p_new_password) {
+    try {
+       let changePassword = await Prisma.user.update({
+      where: { email: email },
+      data: { password: p_new_password }
+    });
+    if (!changePassword){
+      console.log ("not found")
+    } else {
+      return console.log ("succes")
+    }
+    } catch (error) {
+      console.log (error)
+    }
    
   }
+  
   module.exports = {
     register,
     login,
+    changePassword,
   }

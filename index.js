@@ -11,7 +11,7 @@ const {
   deleteProduct,
   searchProduct,
 } = require("./src/controller/product");
-const { register, login } = require("./src/controller/user");
+const { register, login, changePassword } = require("./src/controller/user");
 
 var isRunning = true;
 var secondRunning = false;
@@ -41,6 +41,7 @@ let showCategories = async () => {
   while (isRunning) {
     console.log("1. Login");
     console.log("2. Register");
+    console.log("3. Change Password")
 
     let input = prompt("Please input menu ");
 
@@ -59,6 +60,11 @@ let showCategories = async () => {
       let email = prompt("Please input your email ");
       let password = prompt("Please input your password ");
       await register(name, email, password );
+    }
+    if (Number(input) === 3) {
+      let email = prompt("Please input your email ");
+      let password = prompt("Please input your password ");
+      await changePassword(email, password );
     }
   }
 
