@@ -11,11 +11,12 @@ const {
   deleteProduct,
   searchProduct,
 } = require("./src/controller/product");
-const { register } = require("./src/controller/user");
+const { register, login } = require("./src/controller/user");
 
 var isRunning = true;
 var secondRunning = false;
 let categori = [];
+let user = null
 
 let showCategories = async () => {
   const find = await allTags();
@@ -46,6 +47,12 @@ let showCategories = async () => {
     if (Number(input) === 1) {
       let name = prompt("Please input your name ");
       let password = prompt("Please input your password ");
+      let logins = await login(name,password)
+      if (logins === "succes") {
+        isRunning = false
+        secondRunning = true
+        user = name
+      }
     }
     if (Number(input) === 2) {
       let name = prompt("Please input your name ");
