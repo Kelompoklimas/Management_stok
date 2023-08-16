@@ -3,7 +3,7 @@ const { PrismaClient } = require("@prisma/client");
 const Prisma = new PrismaClient();
 const User = Prisma.user;
 
-const allTags = require("./src/controller/tags");
+const {allTags, createTags} = require("./src/controller/tags");
 const validationProduct = require("./src/middleware/Product.validation");
 const {
   checkFindProduct,
@@ -44,6 +44,7 @@ let showCategories = async () => {
     console.log("2. Register");
     console.log("3. Change Password")
     console.log("4. List Product")
+    console.log("5. Create Tags")
 
     let input = prompt("Please input menu ");
 
@@ -70,6 +71,10 @@ let showCategories = async () => {
     }
     if (Number(input) === 4) {
       await listProduct();
+    }
+    if (Number(input) === 5) {
+      let name_Categori = prompt("Please input name tags ");
+      await createTags(name_Categori );
     }
   }
 
