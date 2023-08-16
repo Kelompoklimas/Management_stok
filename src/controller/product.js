@@ -4,6 +4,30 @@ const Product = Prisma.product;
 const User = Prisma.user;
 const Categories = Prisma.category;
 
+const checkFindProduct = async (input) => {
+  const find = await Product.findUnique({
+    where: {
+      id: input,
+    },
+    select: {
+      name: true,
+      price: true,
+      stock: true,
+      location: true,
+      barcode: true,
+      category: {
+        select: {
+          productId: true,
+          tagsId: true,
+        },
+      },
+    },
+  });
+  if (!find) {
+    return console.log(`id product ${input} not found`);
+  }
+  return { status: "Success", data: find };
+};
 const createProduct = async (input) => {
   const { name, price, stock, location, barcode, user, categories } = input;
   try {
@@ -39,4 +63,70 @@ const createProduct = async (input) => {
   }
 };
 
-module.exports = { createProduct };
+const updateProduct = async (input) => {
+  try {
+    let { id, name, price, stock, location, barcode, categories } = input.input;
+    if (name.length === 0) {
+      name = input.data.name;
+    }
+    if (price.length === 0) {
+      price = input.data.price;
+    } else if (typeof Number(price) !== "number" || isNaN(Number(price))) {
+      return console.log("price must be a number");
+    }
+    if (stock.length <= 0) {
+      stock = input.data.stock;
+    } else if (stock[0] === "-") {
+      stock = input.data.stock - parseInt(stock.replace("-", ""));
+    } else if (stock[0] === "+") {
+      stock = input.data.stock + parseInt(stock.replace("+", ""));
+    } else {
+      return console.log("input stock invalid");
+    }
+
+    if (location.length <= 0) {
+      location = input.data.location;
+    }
+    if (barcode.length <= 0) {
+      barcode = input.data.barcode;
+    }
+    if (categories.length <= 0) {
+      categories = input.data.category;
+    }
+    const updateProduct = await Product.update({
+      where: {
+        id: id,
+      },
+      data: {
+        barcode: barcode,
+        name: name,
+        price: price,
+        stock: Number(stock),
+        location: location,
+      },
+    });
+    if (categories.length > 0) {
+      await Categories.deleteMany({
+        where: {
+          productId: id,
+        },
+      });
+      await Promise.all(
+        categories.map(async (i) => {
+          await Categories.create({
+            data: {
+              productId: id,
+              tagsId: i,
+            },
+          });
+        })
+      );
+    }
+
+    return console.log("Success Update Product");
+  } catch (error) {
+    return console.log(error);
+  }
+};
+
+module.exports = { checkFindProduct, createProduct, updateProduct };
