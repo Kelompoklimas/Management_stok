@@ -5,7 +5,11 @@ const User = Prisma.user;
 
 const allTags = require("./src/controller/tags");
 const validationProduct = require("./src/middleware/Product.validation");
-const { checkFindProduct, updateProduct } = require("./src/controller/product");
+const {
+  checkFindProduct,
+  updateProduct,
+  deleteProduct,
+} = require("./src/controller/product");
 
 var isRunning = true;
 var secondRunning = true;
@@ -47,8 +51,9 @@ let showCategories = async () => {
     console.log("1. Show all category");
     console.log("2. Add Product");
     console.log("3. Update Data");
+    console.log("4. Delete Product");
 
-    let input = prompt("Please input menu");
+    let input = prompt("Please input menu ");
 
     if (Number(input) === 1) {
       await showCategories();
@@ -93,12 +98,16 @@ let showCategories = async () => {
       let status1 = false;
       let data = null;
       let id = prompt("Please input id product ");
-      await checkFindProduct(id).then((response) => {
-        if (response.status === "Success") {
-          status1 = true;
-          data = response.data;
-        }
-      });
+      await checkFindProduct(id)
+        .then((response) => {
+          if (response.status === "Success") {
+            status1 = true;
+            data = response.data;
+          }
+        })
+        .catch((err) => {
+          null;
+        });
       while (status1) {
         console.log(data);
         let name = prompt("Please input your name product ");
@@ -139,6 +148,11 @@ let showCategories = async () => {
         await updateProduct({ input: input, data: data });
         status1 = false;
       }
+    }
+    if (Number(input) === 4) {
+      let input = prompt("Please input id product ");
+
+      await deleteProduct(input);
     }
   }
 })();
