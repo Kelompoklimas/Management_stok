@@ -3,7 +3,7 @@ const { PrismaClient } = require("@prisma/client");
 const Prisma = new PrismaClient();
 const User = Prisma.user;
 
-const {allTags, createTags} = require("./src/controller/tags");
+const { allTags, createTags } = require("./src/controller/tags");
 const validationProduct = require("./src/middleware/Product.validation");
 const {
   checkFindProduct,
@@ -13,11 +13,12 @@ const {
   listProduct,
 } = require("./src/controller/product");
 const { register, login, changePassword } = require("./src/controller/user");
+const connectDB = require("./config/config");
 
 var isRunning = true;
 var secondRunning = false;
 let categori = [];
-let user = null
+let user = null;
 
 let showCategories = async () => {
   const find = await allTags();
@@ -39,42 +40,44 @@ let showCategories = async () => {
 };
 
 (async () => {
+  // connec mongoDB
+  await connectDB();
   while (isRunning) {
     console.log("1. Login");
     console.log("2. Register");
-    console.log("3. Change Password")
-    console.log("4. List Product")
-    console.log("5. Create Tags")
+    console.log("3. Change Password");
+    console.log("4. List Product");
+    console.log("5. Create Tags");
 
     let input = prompt("Please input menu ");
 
     if (Number(input) === 1) {
       let name = prompt("Please input your name ");
       let password = prompt("Please input your password ");
-      let logins = await login(name,password)
+      let logins = await login(name, password);
       if (logins === "succes") {
-        isRunning = false
-        secondRunning = true
-        user = name
+        isRunning = false;
+        secondRunning = true;
+        user = name;
       }
     }
     if (Number(input) === 2) {
       let name = prompt("Please input your name ");
       let email = prompt("Please input your email ");
       let password = prompt("Please input your password ");
-      await register(name, email, password );
+      await register(name, email, password);
     }
     if (Number(input) === 3) {
       let email = prompt("Please input your email ");
       let password = prompt("Please input your password ");
-      await changePassword(email, password );
+      await changePassword(email, password);
     }
     if (Number(input) === 4) {
       await listProduct();
     }
     if (Number(input) === 5) {
       let name_Categori = prompt("Please input name tags ");
-      await createTags(name_Categori );
+      await createTags(name_Categori);
     }
   }
 
@@ -122,7 +125,7 @@ let showCategories = async () => {
         stock: stock,
         location: location,
         barcode: barcode,
-        user: "rajih",
+        user: user,
         categories: categoriesarray,
       };
       await validationProduct(input);

@@ -1,4 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
+const { createResProductMongo } = require("../service_mongo/product");
 const Prisma = new PrismaClient();
 const Product = Prisma.product;
 const User = Prisma.user;
@@ -61,9 +62,11 @@ const createProduct = async (input) => {
       );
     }
 
+    await createResProductMongo("Success", input, "Success create product");
     return console.log("Success create product");
   } catch (error) {
-    console.log("please login first");
+    await createResProductMongo("unauthorized", input, "Please login first");
+    console.log("Please login first");
   }
 };
 
@@ -179,7 +182,7 @@ const searchProduct = async (input) => {
 
 async function listProduct() {
   const products = await Prisma.product.findMany();
-  return console.log (products);
+  return console.log(products);
 }
 
 module.exports = {
