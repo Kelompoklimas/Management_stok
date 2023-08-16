@@ -177,10 +177,16 @@ const searchProduct = async (input) => {
   }
 };
 
+async function listProduct() {
+  const products = await Prisma.product.findMany();
+  return console.log (products);
+}
+
 module.exports = {
   checkFindProduct,
   createProduct,
   updateProduct,
   deleteProduct,
   searchProduct,
+  listProduct,
 };

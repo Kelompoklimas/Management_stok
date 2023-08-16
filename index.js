@@ -10,6 +10,7 @@ const {
   updateProduct,
   deleteProduct,
   searchProduct,
+  listProduct,
 } = require("./src/controller/product");
 const { register, login, changePassword } = require("./src/controller/user");
 
@@ -42,6 +43,7 @@ let showCategories = async () => {
     console.log("1. Login");
     console.log("2. Register");
     console.log("3. Change Password")
+    console.log("4. List Product")
 
     let input = prompt("Please input menu ");
 
@@ -65,6 +67,9 @@ let showCategories = async () => {
       let email = prompt("Please input your email ");
       let password = prompt("Please input your password ");
       await changePassword(email, password );
+    }
+    if (Number(input) === 4) {
+      await listProduct();
     }
   }
 
