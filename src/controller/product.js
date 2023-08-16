@@ -131,8 +131,14 @@ const updateProduct = async (input) => {
       );
     }
 
+    await createResProductMongo(
+      "Success",
+      { name, price, stock, location, barcode, categories },
+      "Success update product"
+    );
     return console.log("Success Update Product");
   } catch (error) {
+    await createResProductMongo("Error", input.input, "Product id Not Found");
     return console.log("Product id Not Found");
   }
 };
@@ -148,8 +154,19 @@ const deleteProduct = async (input) => {
         status: false,
       },
     });
+
+    await createResProductMongo(
+      "Success",
+      { id: input },
+      "Success update product"
+    );
     return console.log("Success Delete Product");
   } catch (error) {
+    await createResProductMongo(
+      "Not Found",
+      { id: input },
+      "Product Not Found"
+    );
     return console.log(error);
   }
 };
@@ -161,6 +178,7 @@ const searchProduct = async (input) => {
         name: {
           contains: input,
         },
+        status: true,
       },
       select: {
         name: true,
@@ -171,8 +189,18 @@ const searchProduct = async (input) => {
       },
     });
     if (products.length > 0) {
+      await createResProductMongo(
+        "Success",
+        { keyword: input },
+        JSON.stringify(products)
+      );
       return console.table(products);
     } else {
+      await createResProductMongo(
+        "Not Found",
+        { keyword: input },
+        "Product Not Found"
+      );
       return console.log("Product Not Found");
     }
   } catch (error) {
