@@ -12,8 +12,9 @@ const {
   searchProduct,
   listProduct,
 } = require("./src/controller/product");
-const { register, login, changePassword } = require("./src/controller/user");
+const { login } = require("./src/controller/user");
 const connectDB = require("./config/config");
+const { registerValidation, changePasswordValidation } = require("./src/middleware/user.validation");
 
 var isRunning = true;
 var secondRunning = false;
@@ -68,12 +69,12 @@ let showCategories = async () => {
       let name = prompt("Please input your name ");
       let email = prompt("Please input your email ");
       let password = prompt("Please input your password ");
-      await register(name, email, password);
+      await registerValidation(name, email, password);
     }
     if (Number(input) === 3) {
       let email = prompt("Please input your email ");
       let password = prompt("Please input your password ");
-      await changePassword(email, password);
+      await changePasswordValidation(email, password);
     }
     if (Number(input) === 4) {
       await listProduct();
