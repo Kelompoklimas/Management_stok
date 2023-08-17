@@ -22,21 +22,24 @@ let user = null;
 
 let showCategories = async () => {
   const find = await allTags();
+  if (find === "NotFound") {
+    return console.log("Tags Not Found");
+  } else {
+    find.map((i, index) =>
+      categori.push({
+        number: index + 1,
+        id: i.id,
+        nameCategori: i.name_tags,
+      })
+    );
 
-  find.map((i, index) =>
-    categori.push({
-      number: index + 1,
-      id: i.id,
-      nameCategori: i.name_tags,
-    })
-  );
-
-  console.table(
-    categori.map((item) => ({
-      number: item.number,
-      nameCategori: item.nameCategori,
-    }))
-  );
+    console.table(
+      categori.map((item) => ({
+        number: item.number,
+        nameCategori: item.nameCategori,
+      }))
+    );
+  }
 };
 
 (async () => {
