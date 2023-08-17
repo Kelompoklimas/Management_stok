@@ -121,7 +121,6 @@ let showCategories = async () => {
         }
         categori = [];
       }
-
       const input = {
         name: name,
         price: price,
