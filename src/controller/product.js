@@ -1,5 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const { createResProductMongo } = require("../service_mongo/product");
+const { createResCategoryMongo } = require("../service_mongo/category");
 const Prisma = new PrismaClient();
 const Product = Prisma.product;
 const User = Prisma.user;
@@ -39,31 +40,54 @@ const createProduct = async (input) => {
         username: user,
       },
     });
-    const createProduct = await Product.create({
-      data: {
+
+    const findBarcode = await Product.findUnique({
+      where: {
         barcode: barcode,
-        name: name,
-        price: price,
-        stock: Number(stock),
-        location: location,
-        userId: findUser.id,
       },
     });
-    if (categories.length > 0) {
-      await Promise.all(
-        categories.map(async (i) => {
-          await Categories.create({
-            data: {
-              productId: createProduct.id,
-              tagsId: i,
-            },
-          });
-        })
+    if (findBarcode) {
+      await createResProductMongo(
+        "Concurrency Conflict",
+        input,
+        "Product with the same barcode already exists"
       );
-    }
+      return console.log("Product with the same barcode already exists");
+    } else {
+      const createProduct = await Product.create({
+        data: {
+          barcode: barcode,
+          name: name,
+          price: price,
+          stock: Number(stock),
+          location: location,
+          userId: findUser.id,
+        },
+      });
+      if (categories.length > 0) {
+        await Promise.all(
+          categories.map(async (i) => {
+            await Categories.create({
+              data: {
+                productId: createProduct.id,
+                tagsId: i,
+              },
+            });
+            await createResCategoryMongo(
+              "Success",
+              {
+                productId: createProduct.id,
+                tagsId: i,
+              },
+              "Success create Category"
+            );
+          })
+        );
+      }
 
-    await createResProductMongo("Success", input, "Success create product");
-    return console.log("Success create product");
+      await createResProductMongo("Success", input, "Success create product");
+      return console.log("Success create product");
+    }
   } catch (error) {
     await createResProductMongo("unauthorized", input, "Please login first");
     console.log("Please login first");
@@ -119,6 +143,11 @@ const updateProduct = async (input) => {
           productId: id,
         },
       });
+      await createResCategoryMongo(
+        "Success",
+        { productId: id },
+        `Success Delete Category Product ${name}`
+      );
       await Promise.all(
         categories.map(async (i) => {
           await Categories.create({
@@ -127,6 +156,11 @@ const updateProduct = async (input) => {
               tagsId: i,
             },
           });
+          await createResCategoryMongo(
+            "Success",
+            { productId: id, tagsId: i },
+            `Success Change Category Product ${name}`
+          );
         })
       );
     }
