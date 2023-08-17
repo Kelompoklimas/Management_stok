@@ -1,4 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
+const Table = require("cli-table");
 const { createResProductMongo } = require("../service_mongo/product");
 const { createResCategoryMongo } = require("../service_mongo/category");
 const Prisma = new PrismaClient();
@@ -209,17 +210,46 @@ const searchProduct = async (input) => {
   try {
     const products = await Product.findMany({
       where: {
-        name: {
-          contains: input,
-        },
-        status: true,
+        OR: [
+          {
+            status: true,
+            name: {
+              contains: input,
+            },
+          },
+          {
+            category: {
+              some: {
+                tags: {
+                  name_tags: {
+                    contains: input,
+                  },
+                },
+              },
+            },
+          },
+          {
+            location: {
+              contains: input,
+            },
+          },
+        ],
       },
       select: {
+        barcode: true,
         name: true,
         price: true,
         stock: true,
         location: true,
-        barcode: true,
+        category: {
+          select: {
+            tags: {
+              select: {
+                name_tags: true,
+              },
+            },
+          },
+        },
       },
     });
     if (products.length > 0) {
@@ -228,7 +258,48 @@ const searchProduct = async (input) => {
         { keyword: input },
         JSON.stringify(products)
       );
-      return console.table(products);
+      const table = new Table({
+        head: [
+          "id",
+          "Name",
+          "Price",
+          "Stock",
+          "Location",
+          "Barcode",
+          "Category",
+        ],
+        colWidths: [5, 20, 20, 20, 20, 20, 20],
+      });
+      products.forEach((item, index) => {
+        let category = [];
+        if (item.category.length === 0) {
+          category.push("");
+        } else {
+          if (item.category.length === 1) {
+            if (typeof item.category[0] === "object") {
+              category.push(item.category[0].tags.name_tags);
+            } else {
+              category.push("");
+            }
+          } else {
+            const categoryNames = item.category
+              .map((cat) => cat.tags.name_tags)
+              .join(", ");
+            category.push(categoryNames);
+          }
+        }
+
+        table.push([
+          index + 1,
+          item.name,
+          item.price,
+          item.stock,
+          item.location,
+          item.barcode,
+          category,
+        ]);
+      });
+      return console.log(table.toString());
     } else {
       await createResProductMongo(
         "Not Found",

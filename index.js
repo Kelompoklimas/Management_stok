@@ -17,7 +17,7 @@ const connectDB = require("./config/config");
 
 var isRunning = true;
 var secondRunning = false;
-let categori = [];
+var categori = [];
 let user = null;
 
 let showCategories = async () => {
@@ -106,21 +106,33 @@ let showCategories = async () => {
       let barcode = prompt("Please input your code barcode ");
       await showCategories();
 
-      let categoriesarray = [];
+      const categoriesArray = [];
+      const urutan = [];
       let status = true;
+
       while (status) {
-        let categories = prompt("Please input categories ");
-        categori.map((e) => {
-          if (Number(e.number) === Number(categories)) {
-            categoriesarray.push(e.id);
+        const categories = prompt("Please input number categories");
+
+        if (urutan.includes(Number(categories))) {
+          console.log("Already category selected");
+        } else {
+          const matchedCategory = categori.find(
+            (e) => Number(e.number) === Number(categories)
+          );
+          if (matchedCategory) {
+            categoriesArray.push(matchedCategory.id);
+            urutan.push(Number(matchedCategory.number));
+          } else {
+            return console.log("Invalid category number");
           }
-        });
-        let cekStatus = prompt("input again ? y / n ");
-        if (cekStatus === "n") {
-          status = !status;
         }
-        categori = [];
+
+        const cekStatus = prompt("Input again? (y/n)");
+        if (cekStatus.toLowerCase() === "n") {
+          status = false;
+        }
       }
+      categori = [];
       const input = {
         name: name,
         price: price,
@@ -128,7 +140,7 @@ let showCategories = async () => {
         location: location,
         barcode: barcode,
         user: user,
-        categories: categoriesarray,
+        categories: categoriesArray,
       };
       await validationProduct(input);
     }
