@@ -233,8 +233,9 @@ let showCategories = async () => {
       }
       if (Number(input) === 5) {
         let email = prompt("Please input your email ");
-        let password = prompt("Please input your password ");
-        await changePasswordValidation(email, password);
+        let password = prompt("Please input your Old Password ");
+        let newPassword = prompt("Please input your New Password ");
+        await changePasswordValidation(email, password, newPassword);
       }
       if (Number(input) === 6) {
         isRunning = true;
