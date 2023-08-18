@@ -7,6 +7,9 @@ const Product = Prisma.product;
 const User = Prisma.user;
 const Categories = Prisma.category;
 
+const colorTextSuccess = "\x1b[32m%s\x1b[0m";
+const colorTextError = "\x1b[31m%s\x1b[0m";
+
 const checkFindProduct = async (input) => {
   const find = await Product.findUnique({
     where: {
@@ -28,7 +31,10 @@ const checkFindProduct = async (input) => {
     },
   });
   if (!find) {
-    return console.log(`id product ${input} not found`);
+    return console.log(
+      colorTextError,
+      `##### id product ${input} not found #####`
+    );
   } else {
     return { status: "Success", data: find };
   }
@@ -53,7 +59,10 @@ const createProduct = async (input) => {
         input,
         "Product with the same barcode already exists"
       );
-      return console.log("Product with the same barcode already exists");
+      return console.log(
+        colorTextError,
+        "##### Product with the same barcode already exists #####"
+      );
     } else {
       const createProduct = await Product.create({
         data: {
@@ -87,11 +96,14 @@ const createProduct = async (input) => {
       }
 
       await createResProductMongo("Success", input, "Success create product");
-      return console.log("Success create product");
+      return console.log(
+        colorTextSuccess,
+        "##### Success create product #####"
+      );
     }
   } catch (error) {
     await createResProductMongo("unauthorized", input, "Please login first");
-    console.log("Please login first");
+    console.log(colorTextError, "##### Please login first #####");
   }
 };
 
@@ -104,7 +116,7 @@ const updateProduct = async (input) => {
     if (price.length === 0) {
       price = input.data.price;
     } else if (typeof Number(price) !== "number" || isNaN(Number(price))) {
-      return console.log("price must be a number");
+      return console.log(colorTextError, "##### price must be a number #####");
     }
     if (stock.length <= 0) {
       stock = input.data.stock;
@@ -113,7 +125,7 @@ const updateProduct = async (input) => {
     } else if (stock[0] === "+") {
       stock = input.data.stock + parseInt(stock.replace("+", ""));
     } else {
-      return console.log("input stock invalid");
+      return console.log(colorTextError, "##### input stock invalid #####");
     }
 
     if (location.length <= 0) {
@@ -121,60 +133,93 @@ const updateProduct = async (input) => {
     }
     if (barcode.length <= 0) {
       barcode = input.data.barcode;
+    } else if (barcode.length >= 10) {
+      await createResProductMongo(
+        "Bad Request",
+        input,
+        "Maximum length of barcodes is 10"
+      );
+      return console.log(
+        colorTextError,
+        "##### Maximum length of barcodes is 10 #####"
+      );
     }
-    if (categories.length <= 0) {
-      categories = input.data.category;
-    }
-    const updateProduct = await Product.update({
+    const findBarcode = await Product.findUnique({
       where: {
-        id: id,
-        status: true,
-      },
-      data: {
         barcode: barcode,
-        name: name,
-        price: price,
-        stock: Number(stock),
-        location: location,
       },
     });
-    if (categories.length > 0) {
-      await Categories.deleteMany({
+    if (findBarcode) {
+      await createResProductMongo(
+        "Concurrency Conflict",
+        input,
+        "Product with the same barcode already exists"
+      );
+      return console.log(
+        colorTextError,
+        "##### Product with the same barcode already exists #####"
+      );
+    } else {
+      // if (categories.length <= 0) {
+      //   categories = input.data.category;
+      // }
+      const updateProduct = await Product.update({
         where: {
-          productId: id,
+          id: id,
+          status: true,
+        },
+        data: {
+          barcode: barcode,
+          name: name,
+          price: price,
+          stock: Number(stock),
+          location: location,
+          updatedAt: new Date(),
         },
       });
-      await createResCategoryMongo(
+      if (categories.length > 0) {
+        await Categories.deleteMany({
+          where: {
+            productId: id,
+          },
+        });
+        await createResCategoryMongo(
+          "Success",
+          { productId: id },
+          `Success Delete Category Product ${name}`
+        );
+        await Promise.all(
+          categories.map(async (i) => {
+            console.log(i);
+            await Categories.create({
+              data: {
+                productId: id,
+                tagsId: i,
+              },
+            });
+            await createResCategoryMongo(
+              "Success",
+              { productId: id, tagsId: i },
+              `Success Change Category Product ${name}`
+            );
+          })
+        );
+      }
+
+      await createResProductMongo(
         "Success",
-        { productId: id },
-        `Success Delete Category Product ${name}`
+        { name, price, stock, location, barcode, categories },
+        "Success update product"
       );
-      await Promise.all(
-        categories.map(async (i) => {
-          await Categories.create({
-            data: {
-              productId: id,
-              tagsId: i,
-            },
-          });
-          await createResCategoryMongo(
-            "Success",
-            { productId: id, tagsId: i },
-            `Success Change Category Product ${name}`
-          );
-        })
+      return console.log(
+        colorTextSuccess,
+        "##### Success Update Product #####"
       );
     }
-
-    await createResProductMongo(
-      "Success",
-      { name, price, stock, location, barcode, categories },
-      "Success update product"
-    );
-    return console.log("Success Update Product");
   } catch (error) {
+    console.log(error);
     await createResProductMongo("Error", input.input, "Product id Not Found");
-    return console.log("Product id Not Found");
+    return console.log(colorTextError, "##### Product id Not Found #####");
   }
 };
 
@@ -187,22 +232,23 @@ const deleteProduct = async (input) => {
       },
       data: {
         status: false,
+        updatedAt: new Date(),
       },
     });
 
     await createResProductMongo(
       "Success",
       { id: input },
-      "Success update product"
+      "Success Delete product"
     );
-    return console.log("Success Delete Product");
+    return console.log(colorTextSuccess, "##### Success Delete Product #####");
   } catch (error) {
     await createResProductMongo(
       "Not Found",
       { id: input },
       "Product Not Found"
     );
-    return console.log(error);
+    return console.log(colorTextError, "##### id Product Not Found #####");
   }
 };
 
@@ -251,6 +297,9 @@ const searchProduct = async (input) => {
           },
         },
       },
+      orderBy: {
+        updatedAt: "desc",
+      },
     });
     if (products.length > 0) {
       await createResProductMongo(
@@ -292,8 +341,11 @@ const searchProduct = async (input) => {
         table.push([
           index + 1,
           item.name,
-          item.price,
-          item.stock,
+          new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
+          }).format(item.price),
+          item.stock.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","),
           item.location,
           item.barcode,
           category,
@@ -306,15 +358,72 @@ const searchProduct = async (input) => {
         { keyword: input },
         "Product Not Found"
       );
-      return console.log("Product Not Found");
+      return console.log(colorTextError, "##### Product Not Found #####");
     }
   } catch (error) {
     return console.log(error);
   }
 };
 
+const findSpesificProductbyUser = async (input) => {
+  const findProduct = await Product.findMany({
+    where: {
+      user: {
+        username: input,
+      },
+      status: true,
+    },
+    select: {
+      id: true,
+      name: true,
+      price: true,
+      stock: true,
+      location: true,
+      barcode: true,
+      category: {
+        select: {
+          tags: {
+            select: {
+              name_tags: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      updatedAt: "desc",
+    },
+  });
+  if (findProduct.length === 0) {
+    await createResProductMongo(
+      "Not Found",
+      { user: input },
+      "Product Not Found"
+    );
+    return console.log(colorTextError, "##### Not Found #####");
+  } else {
+    const formattedProducts = findProduct.map((product) => ({
+      id: product.id,
+      name: product.name,
+      price: new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+      }).format(product.price),
+      stock: product.stock.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+      location: product.location,
+      barcode: product.barcode,
+      category: product.category.map((item) => item.tags.name_tags).join(", "),
+    }));
+    return console.table(formattedProducts);
+  }
+};
+
 async function listProduct() {
-  const products = await Prisma.product.findMany();
+  const products = await Prisma.product.findMany({
+    where: {
+      status: true,
+    },
+  });
   return console.log(products);
 }
 
@@ -325,4 +434,5 @@ module.exports = {
   deleteProduct,
   searchProduct,
   listProduct,
+  findSpesificProductbyUser,
 };

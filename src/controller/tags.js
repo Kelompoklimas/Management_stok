@@ -9,6 +9,9 @@ const allTags = async () => {
       id: true,
       name_tags: true,
     },
+    orderBy: {
+      updatedAt: "desc",
+    },
   });
   if (findAllTags.length > 0) {
     await createResTagsMongo("Success", "", JSON.stringify(findAllTags));
@@ -25,7 +28,7 @@ async function createTags(p_name_category) {
       name_tags: p_name_category,
     },
   });
-  return console.log("succes create tags");
+  return console.log("\x1b[32m%s\x1b[0m", "succes create tags");
 }
 
 module.exports = {

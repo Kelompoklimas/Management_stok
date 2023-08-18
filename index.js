@@ -11,11 +11,16 @@ const {
   deleteProduct,
   searchProduct,
   listProduct,
+  findSpesificProductbyUser,
 } = require("./src/controller/product");
 const { login } = require("./src/controller/user");
 const connectDB = require("./config/config");
-const { registerValidation, changePasswordValidation } = require("./src/middleware/user.validation");
+const {
+  registerValidation,
+  changePasswordValidation,
+} = require("./src/middleware/user.validation");
 
+let colorTextMenu = "\x1b[34m%s\x1b[0m";
 var isRunning = true;
 var secondRunning = false;
 var categori = [];
@@ -24,7 +29,7 @@ let user = null;
 let showCategories = async () => {
   const find = await allTags();
   if (find === "NotFound") {
-    return console.log("Tags Not Found");
+    return console.log("\x1b[31m%s\x1b[0m", "##### Tags Not Found #####");
   } else {
     find.map((i, index) =>
       categori.push({
@@ -47,11 +52,12 @@ let showCategories = async () => {
   // connec mongoDB
   await connectDB();
   while (isRunning) {
-    console.log("1. Login");
-    console.log("2. Register");
-    console.log("3. Change Password");
-    console.log("4. List Product");
-    console.log("5. Create Tags");
+    console.log(colorTextMenu, "1. Login");
+    console.log(colorTextMenu, "2. Register");
+    console.log(colorTextMenu, "3. Search Product");
+    console.log(colorTextMenu, "4. List Product");
+    console.log(colorTextMenu, "5. Create Tags");
+    console.log(colorTextMenu, "6. Exit");
 
     let input = prompt("Please input menu ");
 
@@ -72,10 +78,12 @@ let showCategories = async () => {
       await registerValidation(name, email, password);
     }
     if (Number(input) === 3) {
-      let email = prompt("Please input your email ");
-      let password = prompt("Please input your password ");
-      await changePasswordValidation(email, password);
+      console.log("can search by product name, location, and category");
+      let input = prompt("Please input name product ");
+
+      await searchProduct(input);
     }
+
     if (Number(input) === 4) {
       await listProduct();
     }
@@ -83,132 +91,156 @@ let showCategories = async () => {
       let name_Categori = prompt("Please input name tags ");
       await createTags(name_Categori);
     }
-  }
-
-  while (secondRunning) {
-    console.log("1. Show all category");
-    console.log("2. Add Product");
-    console.log("3. Update Data");
-    console.log("4. Delete Product");
-    console.log("5. Search Product");
-
-    let input = prompt("Please input menu ");
-
-    if (Number(input) === 1) {
-      await showCategories();
-      categori = [];
+    if (Number(input) === 6) {
+      isRunning = false;
     }
+    // Main Menu
+    while (secondRunning) {
+      console.log(colorTextMenu, "1. Show all category");
+      console.log(colorTextMenu, "2. Add Product");
+      console.log(colorTextMenu, "3. Update Data");
+      console.log(colorTextMenu, "4. Delete Product");
+      console.log(colorTextMenu, "5. Change Password");
+      console.log(colorTextMenu, "6. Logout");
 
-    if (Number(input) === 2) {
-      let name = prompt("Please input your name product ");
-      let price = prompt("Please input your price product ");
-      let stock = prompt("Please input your stock product ");
-      let location = prompt("Please input your location ");
-      let barcode = prompt("Please input your code barcode ");
-      await showCategories();
+      let input = prompt("Please input menu ");
 
-      const categoriesArray = [];
-      const urutan = [];
-      let status = true;
-
-      while (status) {
-        const categories = prompt("Please input number categories");
-
-        if (urutan.includes(Number(categories))) {
-          console.log("Already category selected");
-        } else {
-          const matchedCategory = categori.find(
-            (e) => Number(e.number) === Number(categories)
-          );
-          if (matchedCategory) {
-            categoriesArray.push(matchedCategory.id);
-            urutan.push(Number(matchedCategory.number));
-          } else {
-            return console.log("Invalid category number");
-          }
-        }
-
-        const cekStatus = prompt("Input again? (y/n)");
-        if (cekStatus.toLowerCase() === "n") {
-          status = false;
-        }
+      if (Number(input) === 1) {
+        await showCategories();
+        categori = [];
       }
-      categori = [];
-      const input = {
-        name: name,
-        price: price,
-        stock: stock,
-        location: location,
-        barcode: barcode,
-        user: user,
-        categories: categoriesArray,
-      };
-      await validationProduct(input);
-    }
-    if (Number(input) === 3) {
-      let status1 = false;
-      let data = null;
-      let id = prompt("Please input id product ");
-      await checkFindProduct(id)
-        .then((response) => {
-          if (response.status === "Success") {
-            status1 = true;
-            data = response.data;
-          }
-        })
-        .catch((err) => {
-          null;
-        });
-      while (status1) {
-        console.log(data);
+
+      if (Number(input) === 2) {
         let name = prompt("Please input your name product ");
         let price = prompt("Please input your price product ");
-        console.log(
-          "---please make sure if you want to add stock start with + and otherwise start with - (example : -1 or +1)"
-        );
         let stock = prompt("Please input your stock product ");
         let location = prompt("Please input your location ");
         let barcode = prompt("Please input your code barcode ");
         await showCategories();
 
-        let categoriesarray = [];
+        const categoriesArray = [];
+        const urutan = [];
         let status = true;
+
         while (status) {
-          let categories = prompt("Please input categories ");
-          categori.map((e) => {
-            if (Number(e.number) === Number(categories)) {
-              categoriesarray.push(e.id);
+          const categories = prompt("Please input number categories");
+
+          if (urutan.includes(Number(categories))) {
+            console.log("Already category selected");
+          } else {
+            const matchedCategory = categori.find(
+              (e) => Number(e.number) === Number(categories)
+            );
+            if (matchedCategory) {
+              categoriesArray.push(matchedCategory.id);
+              urutan.push(Number(matchedCategory.number));
+            } else {
+              console.log("Invalid category number");
             }
-          });
-          let cekStatus = prompt("input again ? y / n ");
-          if (cekStatus === "n") {
-            status = !status;
+          }
+
+          const cekStatus = prompt("Input again? (y/n)");
+          if (cekStatus.toLowerCase() === "n") {
+            status = false;
           }
         }
+        categori = [];
         const input = {
-          id: id,
           name: name,
           price: price,
           stock: stock,
           location: location,
           barcode: barcode,
-          user: "rajih",
-          categories: categoriesarray,
+          user: user,
+          categories: categoriesArray,
         };
+        await validationProduct(input);
+      }
+      if (Number(input) === 3) {
+        let status1 = false;
+        let data = null;
+        await findSpesificProductbyUser(user);
+        let id = prompt("Please input id product ");
+        await checkFindProduct(id)
+          .then((response) => {
+            if (response.status === "Success") {
+              status1 = true;
+              data = response.data;
+            }
+          })
+          .catch((err) => {
+            null;
+          });
+        while (status1) {
+          let name = prompt("Please input your name product ");
+          let price = prompt("Please input your price product ");
+          console.log(
+            "---please make sure if you want to add stock start with + and otherwise start with - (example : -1 or +1)"
+          );
+          let stock = prompt("Please input your stock product ");
+          let location = prompt("Please input your location ");
+          let barcode = prompt("Please input your code barcode ");
+          await showCategories();
 
-        await updateProduct({ input: input, data: data });
-        status1 = false;
+          const categoriesArray = [];
+          const urutan = [];
+          let status = true;
+
+          while (status) {
+            console.log(categoriesArray);
+            const categories = prompt("Please input number categories");
+
+            if (urutan.includes(Number(categories))) {
+              console.log("Already category selected");
+            } else {
+              const matchedCategory = categori.find(
+                (e) => Number(e.number) === Number(categories)
+              );
+              if (matchedCategory) {
+                categoriesArray.push(matchedCategory.id);
+                urutan.push(Number(matchedCategory.number));
+              } else {
+                console.log("Invalid category number");
+              }
+            }
+
+            const cekStatus = prompt("Input again? (y/n)");
+            if (cekStatus.toLowerCase() === "n") {
+              status = false;
+            }
+          }
+          categori = [];
+          const input = {
+            id: id,
+            name: name,
+            price: price,
+            stock: stock,
+            location: location,
+            barcode: barcode,
+            user: "rajih",
+            categories: categoriesArray,
+          };
+
+          await updateProduct({ input: input, data: data });
+          status1 = false;
+        }
+      }
+      if (Number(input) === 4) {
+        await findSpesificProductbyUser(user);
+        let input = prompt("Please input id product ");
+
+        await deleteProduct(input);
+      }
+      if (Number(input) === 5) {
+        let email = prompt("Please input your email ");
+        let password = prompt("Please input your password ");
+        await changePasswordValidation(email, password);
+      }
+      if (Number(input) === 6) {
+        isRunning = true;
+        secondRunning = false;
       }
     }
-    if (Number(input) === 4) {
-      let input = prompt("Please input id product ");
-
-      await deleteProduct(input);
-    }
-    if (Number(input) === 5) {
-      let input = prompt("Please input name product ");
-
-      await searchProduct(input);
-    }
+    // end Main Menu
   }
 })();
