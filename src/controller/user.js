@@ -1,4 +1,3 @@
-// Register
 const { PrismaClient } = require("@prisma/client");
 const Prisma = new PrismaClient();
 
@@ -30,11 +29,11 @@ async function register(p_username, p_email, p_password) {
     }
   }
 
-  async function changePassword(email, p_new_password) {
+  async function changePassword(email, password, newPassword) {
     try {
        let changePassword = await Prisma.user.update({
       where: { email: email },
-      data: { password: p_new_password }
+      data: { password: newPassword },
     });
     if (!changePassword){
       console.log ("not found")
@@ -44,7 +43,6 @@ async function register(p_username, p_email, p_password) {
     } catch (error) {
       console.log (error)
     }
-   
   }
   
   module.exports = {
