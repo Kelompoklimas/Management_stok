@@ -19,7 +19,7 @@ async function changePasswordValidation(email, password, newPassword) {
       const user = await Prisma.user.findFirst({where: {email: email}})
       if (user.password !== password) {
           console.log("The current username or password is incorrect.");
-      } else if (newPassword.length >=7) {
+      } else if (newPassword.length < 6) {
           return console.log("The new password does not meet the requirements");
       } else {
           await changePassword(email, password, newPassword)
