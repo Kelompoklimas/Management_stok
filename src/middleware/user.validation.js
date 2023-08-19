@@ -16,10 +16,11 @@ async function registerValidation(username, email, password) {
 
 async function changePasswordValidation(email, password, newPassword) {
   try {
-      const user = await Prisma.user.findFirst({where: {email: email}})
+      const user = await Prisma.user.findFirst({where: {email: email}});
+      const complexPassword =  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
       if (user.password !== password) {
           console.log("The current username or password is incorrect.");
-      } else if (newPassword.length < 6) {
+      } else if (newPassword.length < 6 ||!complexPassword.test(newPassword)) {
           return console.log("The new password does not meet the requirements");
       } else {
           await changePassword(email, password, newPassword)
