@@ -400,7 +400,8 @@ const findSpesificProductbyUser = async (input) => {
       { user: input },
       "Product Not Found"
     );
-    return console.log(colorTextError, "##### Not Found #####");
+   console.log(colorTextError, "##### Not Found Product #####");
+   return "Error"
   } else {
     const formattedProducts = findProduct.map((product) => ({
       id: product.id,

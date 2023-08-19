@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const mongoURI = "mongodb://localhost:27017/db_monitor_management_stock";
+const mongoURI = "mongodb://127.0.0.1:27017/db_monitor_management_stock";
 
 const connectDB = async () => {
   try {

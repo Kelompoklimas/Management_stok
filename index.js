@@ -159,8 +159,9 @@ let showCategories = async () => {
       if (Number(input) === 3) {
         let status1 = false;
         let data = null;
-        await findSpesificProductbyUser(user);
-        let id = prompt("Please input id product ");
+        const showProduct = await findSpesificProductbyUser(user).then(async(response)=>{
+          if(response !== "Error"){
+            let id = prompt("Please input id product ");
         await checkFindProduct(id)
           .then((response) => {
             if (response.status === "Success") {
@@ -224,12 +225,19 @@ let showCategories = async () => {
           await updateProduct({ input: input, data: data });
           status1 = false;
         }
+          }
+        })
+        
       }
       if (Number(input) === 4) {
-        await findSpesificProductbyUser(user);
-        let input = prompt("Please input id product ");
+        await findSpesificProductbyUser(user).then(async(response)=>{
+          if(response !== "Error"){
+            let input = prompt("Please input id product ");
 
-        await deleteProduct(input);
+            await deleteProduct(input);
+          }
+        })
+       
       }
       if (Number(input) === 5) {
         let email = prompt("Please input your email ");
